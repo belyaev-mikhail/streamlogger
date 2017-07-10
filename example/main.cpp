@@ -8,5 +8,5 @@ int main() {
     cat.add_sink(file_sink::instance("errors.log"), "<%-8.8c> %m", level::WARN);
 
     cat.info() << "Hello my little friend " << 42;
-    cat.error() << "Wadda fuck nigga";
+    cat.error() << "Wat the hell is goin' on 'ere?";
 }
