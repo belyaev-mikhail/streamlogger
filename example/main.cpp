@@ -1,12 +1,11 @@
 #include <streamlogger/category.h>
+#include <streamlogger/configurator.h>
 
 int main() {
     using namespace streamlogger;
-    category cat("base");
+    configure("../../../log.tests.ini");
 
-    cat.add_sink(cout_sink::instance(), "[%d] %-5p [%-10c] %m %% >>>");
-    cat.add_sink(file_sink::instance("errors.log"), "<%-8.8c> %m", level::WARN);
+    error("") << "Hello bitches" << " " << 42;
 
-    cat.info() << "Hello my little friend " << 42;
-    cat.error() << "Wat the hell is goin' on 'ere?";
+    info("wrapper") << "C'mon meeen" << 5;
 }

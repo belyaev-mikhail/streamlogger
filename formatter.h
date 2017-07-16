@@ -34,23 +34,28 @@ class pattern {
         };
     }
 
+    static constexpr int abs(int v) { return v < 0 ? -v : v; } 
+
+    static void handleMinWidth(sink& ostr, int min_width) {
+        if(min_width > 0) ostr << std::left;
+        if(min_width != 0) ostr << std::setw(abs(min_width));
+    }
+    static void writeString(sink& ostr, ::essentials::string_view sv, int min_width, unsigned max_width) {
+        handleMinWidth(ostr, min_width);
+        if(max_width != 0) {
+            ostr << sv.substr(0, max_width);
+        } else ostr << sv;
+    }
+
     static outputter putCategory(int min_width, unsigned max_width, const std::string&) {
         return [min_width, max_width](sink& ostr, const message_info& mi) {
-            if(min_width < 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
-            if(max_width != 0) {
-                ostr << mi.category.substr(0, max_width);
-            } else ostr << mi.category;
+            writeString(ostr, mi.category, min_width, max_width);
         };
     }
 
     static outputter putCaller(int min_width, unsigned max_width, const std::string&) {
         return [min_width, max_width](sink& ostr, const message_info& mi) {
-            if(min_width > 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
-            if(max_width != 0) {
-                ostr << mi.caller.substr(0, max_width);
-            } else ostr << mi.caller;
+            writeString(ostr, mi.caller, min_width, max_width);
         };
     }
 
@@ -58,35 +63,27 @@ class pattern {
         return [min_width, max_width, postfix](sink& ostr, const message_info& mi) {
             auto pfix = postfix;
             if(pfix.empty()) pfix = "%F %T";
-            if(min_width > 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
-
-            ostr << date::format(pfix, mi.time_point);
+            handleMinWidth(ostr, min_width);
+            ostr << date::format(pfix, std::chrono::system_clock::now() + util::local_tz_offset());
         };
     }
 
-    static outputter putFilename(int min_width, unsigned max_width, const std::string& postfix) {
+    static outputter putFilename(int min_width, unsigned max_width, const std::string&) {
         return [min_width, max_width](sink& ostr, const message_info& mi) {
-            if(min_width > 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
-            if(max_width != 0) {
-                ostr << mi.caller_location.file.substr(0, max_width);
-            } else ostr << mi.caller_location.file;
+            writeString(ostr, mi.caller_location.file, min_width, max_width);
         };
     }
 
-    static outputter putLinenumber(int min_width, unsigned max_width, const std::string& postfix) {
+    static outputter putLinenumber(int min_width, unsigned max_width, const std::string&) {
         return [min_width, max_width](sink& ostr, const message_info& mi) {
-            if(min_width > 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
+            handleMinWidth(ostr, min_width);
             ostr << mi.caller_location.line ;
         };
     }
 
     static outputter putLinefeed(int min_width, unsigned max_width, const std::string& postfix) {
         return [min_width, max_width](sink& ostr, const message_info& mi) {
-            if(min_width > 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
+            handleMinWidth(ostr, min_width);
             ostr << '\n';
         };
     }
@@ -98,8 +95,7 @@ class pattern {
                   << ":" << mi.caller_location.line
                   << ":" << mi.caller_location.col << std::flush;
 
-            if(min_width > 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
+            handleMinWidth(ostr, min_width);
             ostr << locus.rdbuf();
         };
     }
@@ -107,7 +103,6 @@ class pattern {
     static outputter putPriority(int min_width, unsigned max_width, const std::string& postfix) {
         return [min_width, max_width](sink& ostr, const message_info& mi) {
             const char* prio;
-            size_t w;
             switch(mi.level) {
                 case level::ALL:
                     prio = "ALL";
@@ -132,9 +127,7 @@ class pattern {
                     break;
             }
 
-            if(min_width > 0) ostr << std::left;
-            if(min_width != 0) ostr << std::setw(std::abs(min_width));
-            ostr << prio;
+            writeString(ostr, prio, min_width, max_width);
         };
     }
 
@@ -260,8 +253,6 @@ class formatter {
     level threshold = level::TRACE;
     bool skip = false;
 public:
-
-
     formatter(std::shared_ptr<sink> sink, const std::string& pstring, level threshold = level::ALL)
         : sink_(sink), pattern(pattern::parse(pstring)), threshold(threshold) {}
 

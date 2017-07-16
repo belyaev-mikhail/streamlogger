@@ -34,13 +34,13 @@ protected:
     }
 
     void output(const message_start& m) {
-        handle_start(*m.info);
         sink_mutex.lock();
+        handle_start(*m.info);
     }
 
     void output(const message_end& m) {
-        sink_mutex.unlock();
         handle_end(*m.info);
+        sink_mutex.unlock();
     }
 
 public:
@@ -58,9 +58,7 @@ public:
 
 class cout_sink: public sink {
     void handle_start(const message_info&) override {}
-    void handle_end(const message_info&) override {
-        (*stream) << '\n';
-    }
+    void handle_end(const message_info&) override {}
 
 public:
     cout_sink(): sink(&std::cout, false) {}
@@ -74,9 +72,7 @@ public:
 
 class cerr_sink: public sink {
     void handle_start(const message_info&) override {}
-    void handle_end(const message_info&) override {
-        (*stream) << '\n';
-    }
+    void handle_end(const message_info&) override {}
 
 public:
     cerr_sink(): sink(&std::cerr, false) {}
@@ -94,9 +90,7 @@ public:
 
 private:
     void handle_start(const message_info&) override {}
-    void handle_end(const message_info& mi) override {
-        (*stream) << '\n';
-    }
+    void handle_end(const message_info& mi) override {}
 
     template<class Name>
     static std::ofstream* open_file(Name&& name, mode m) {
