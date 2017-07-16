@@ -1,0 +1,6 @@
+syntax: glob
+
+.git
+example/run
+example/*.log
+
